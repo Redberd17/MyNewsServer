@@ -1,10 +1,15 @@
 package com.nefedova.MyNewsSpringBoot.entity;
 
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,6 +25,7 @@ import lombok.Setter;
 public class User {
 
   @Id
+  @Column(name = "user_id")
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long userId;
 
@@ -29,7 +35,10 @@ public class User {
   @Column(name = "password")
   private String password;
 
-  @Column(name = "role")
-  private String role;
+  @ManyToMany(fetch = FetchType.EAGER)
+  @JoinTable(name = "user_roles",
+      joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "user_id")},
+      inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "role_id")})
+  private List<Role> roles;
 
 }

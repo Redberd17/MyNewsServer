@@ -7,10 +7,12 @@ public interface UserService {
 
   List<User> getAllUsers();
 
+  User getUser(String username);
+
   User createUser(User newUser);
 
   User updateUser(User user);
 
-  void deleteUserById(Long id);
+  void deleteUser(String username);
 
 }

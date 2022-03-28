@@ -2,11 +2,11 @@ package com.nefedova.MyNewsSpringBoot.controller;
 
 import com.nefedova.MyNewsSpringBoot.entity.User;
 import com.nefedova.MyNewsSpringBoot.service.UserService;
-import java.rmi.ServerException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
 
   private final UserService userService;
@@ -27,36 +27,49 @@ public class UserController {
     this.userService = userService;
   }
 
-  @GetMapping("/getAllUsers")
+  @GetMapping("/all")
   public ResponseEntity<List<User>> getAllUsers() {
     List<User> listUser = userService.getAllUsers();
+    if (CollectionUtils.isEmpty(listUser)) {
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
     return new ResponseEntity<>(listUser, HttpStatus.OK);
   }
 
-  @PostMapping("/createUser")
-  public ResponseEntity<User> createUser(@RequestBody User newUser) throws ServerException {
+  @PostMapping("/{username}")
+  public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
+    User user = userService.getUser(username);
+    if (user != null) {
+      return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+  }
+
+  @PostMapping("/user")
+  public ResponseEntity<User> createUser(@RequestBody User newUser) {
     User user = userService.createUser(newUser);
     if (user == null) {
-      throw new ServerException("");
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     } else {
       return new ResponseEntity<>(HttpStatus.CREATED);
     }
   }
 
-  @PutMapping("/user")
-  public ResponseEntity<User> updateUser(@RequestBody User updatedUser) throws ServerException {
+  @PutMapping("/{username}")
+  public ResponseEntity<User> updateUser(@PathVariable String username,
+      @RequestBody User updatedUser) {
     User user = userService.updateUser(updatedUser);
     if (user == null) {
-      throw new ServerException("");
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
       return new ResponseEntity<>(HttpStatus.OK);
     }
   }
 
 
-  @DeleteMapping("/{userId}")
-  public ResponseEntity<User> deleteUserById(@PathVariable(name = "userId") Long userId) {
-    userService.deleteUserById(userId);
+  @DeleteMapping("/{username}")
+  public ResponseEntity<User> deleteUserById(@PathVariable(name = "username") String username) {
+    userService.deleteUser(username);
     return new ResponseEntity<>(HttpStatus.OK);
   }
 

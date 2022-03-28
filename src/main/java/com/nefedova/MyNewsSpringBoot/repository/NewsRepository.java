@@ -14,4 +14,6 @@ public interface NewsRepository extends CrudRepository<News, Long> {
 
   void deleteByNewsId(Long newsId);
 
+  News findByNewsId(Long id);
+
 }

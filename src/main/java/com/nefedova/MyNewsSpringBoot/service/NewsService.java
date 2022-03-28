@@ -9,7 +9,7 @@ public interface NewsService {
 
   News createNews(News newNews);
 
-  News updateNews(News news);
+  News updateNews(Long id, News news);
 
   void deleteNewsById(Long id);
 
