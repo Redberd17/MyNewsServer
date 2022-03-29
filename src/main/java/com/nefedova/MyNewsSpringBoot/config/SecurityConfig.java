@@ -2,6 +2,7 @@ package com.nefedova.MyNewsSpringBoot.config;
 
 import com.nefedova.MyNewsSpringBoot.security.jwt.JwtConfigurer;
 import com.nefedova.MyNewsSpringBoot.security.jwt.JwtTokenProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +25,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     return super.authenticationManagerBean();
   }
 
+  @Autowired
   public SecurityConfig(JwtTokenProvider jwtTokenProvider) {
     this.jwtTokenProvider = jwtTokenProvider;
   }
@@ -39,6 +41,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .antMatchers(LOGIN_ENDPOINT).permitAll()
         .antMatchers(ADMIN_ENDPOINT).hasRole("ADMIN")
         .anyRequest().authenticated()
-        .and().apply(new JwtConfigurer(jwtTokenProvider));
+        .and()
+        .apply(new JwtConfigurer(jwtTokenProvider));
   }
 }

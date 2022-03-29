@@ -7,6 +7,7 @@ import com.nefedova.MyNewsSpringBoot.model.AuthenticationRequestModel;
 import com.nefedova.MyNewsSpringBoot.model.AuthenticationResponseModel;
 import com.nefedova.MyNewsSpringBoot.security.jwt.JwtTokenProvider;
 import com.nefedova.MyNewsSpringBoot.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,11 +24,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/auth")
 public class AuthenticationController {
 
-  private AuthenticationManager authenticationManager;
+  private final AuthenticationManager authenticationManager;
 
-  private JwtTokenProvider jwtTokenProvider;
+  private final JwtTokenProvider jwtTokenProvider;
 
-  private UserService userService;
+  private final UserService userService;
+
+  @Autowired
+  public AuthenticationController(
+      AuthenticationManager authenticationManager,
+      JwtTokenProvider jwtTokenProvider,
+      UserService userService) {
+    this.authenticationManager = authenticationManager;
+    this.jwtTokenProvider = jwtTokenProvider;
+    this.userService = userService;
+  }
 
   @PostMapping("/login")
   public ResponseEntity<AuthenticationResponseModel> login(

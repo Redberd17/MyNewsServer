@@ -10,7 +10,7 @@ public class BCryptEncoderUtil {
   }
 
   public static void main(String[] args) {
-    String password = "449725";
+    String password = "1234";
     String encryptedPassword = encryptPassword(password);
     System.out.println("Encrypted Password: " + encryptedPassword);
   }

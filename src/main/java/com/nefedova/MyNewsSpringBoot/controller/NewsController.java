@@ -40,9 +40,9 @@ public class NewsController {
   public ResponseEntity<List<News>> getAllNews() {
     List<News> listNews = newsService.getAllNews();
     if (CollectionUtils.isEmpty(listNews)) {
-      return new ResponseEntity<>(listNews, HttpStatus.OK);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } else {
-      return new ResponseEntity<>(listNews, HttpStatus.NO_CONTENT);
+      return new ResponseEntity<>(listNews, HttpStatus.OK);
     }
   }
 
