@@ -17,6 +17,7 @@ public class UserRoles {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
+  @Column(columnDefinition = "serial")
   private Long id;
 
   @Column(name = "user_id")

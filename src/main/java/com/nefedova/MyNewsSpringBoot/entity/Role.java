@@ -19,7 +19,7 @@ import lombok.Setter;
 public class Role {
 
   @Id
-  @Column(name = "role_id")
+  @Column(name = "role_id", columnDefinition = "serial")
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long roleId;
 

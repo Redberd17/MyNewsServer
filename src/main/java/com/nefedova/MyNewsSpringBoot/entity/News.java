@@ -21,6 +21,7 @@ public class News {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
+  @Column(columnDefinition = "serial")
   private Long newsId;
 
   @Column(name = "title")
@@ -35,7 +36,7 @@ public class News {
   @Column(name = "url_to_image")
   private String urlToImage;
 
-  @Column(name = "published_at")
+  @Column(name = "published_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   private String publishedAt;
 
   @Column(name = "user_id")
