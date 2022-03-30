@@ -36,7 +36,7 @@ public class News {
   @Column(name = "url_to_image")
   private String urlToImage;
 
-  @Column(name = "published_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+  @Column(name = "published_at")
   private String publishedAt;
 
   @Column(name = "user_id")

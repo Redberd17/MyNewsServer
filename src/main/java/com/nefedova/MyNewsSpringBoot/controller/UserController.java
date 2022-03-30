@@ -1,5 +1,7 @@
 package com.nefedova.MyNewsSpringBoot.controller;
 
+import static java.lang.String.format;
+
 import com.nefedova.MyNewsSpringBoot.entity.User;
 import com.nefedova.MyNewsSpringBoot.service.UserService;
 import java.util.List;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/users")
@@ -47,11 +50,16 @@ public class UserController {
 
   @PostMapping("/user")
   public ResponseEntity<User> createUser(@RequestBody User newUser) {
-    User user = userService.createUser(newUser);
-    if (user == null) {
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    User user = userService.getUser(newUser.getUsername());
+    if (user != null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          format("User with username %s is already exist", newUser.getUsername()));
+    }
+    User createdUser = userService.createUser(newUser);
+    if (createdUser == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User has not been created");
     } else {
-      return new ResponseEntity<>(HttpStatus.CREATED);
+      return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
   }
 
@@ -69,8 +77,16 @@ public class UserController {
 
   @DeleteMapping("/{username}")
   public ResponseEntity<User> deleteUserById(@PathVariable(name = "username") String username) {
-    userService.deleteUser(username);
-    return new ResponseEntity<>(HttpStatus.OK);
+    User user = userService.getUser(username);
+    if (user == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    try {
+      userService.deleteUser(username);
+      return new ResponseEntity<>(HttpStatus.OK);
+    } catch (Exception e) {
+      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
 }
