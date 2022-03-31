@@ -1,15 +1,20 @@
 package com.nefedova.MyNewsSpringBoot.controller;
 
+import com.nefedova.MyNewsSpringBoot.dto.NewsDto;
 import com.nefedova.MyNewsSpringBoot.entity.News;
+import com.nefedova.MyNewsSpringBoot.entity.User;
 import com.nefedova.MyNewsSpringBoot.model.LegacyNewsResponse;
-import com.nefedova.MyNewsSpringBoot.service.NewsService;
+import com.nefedova.MyNewsSpringBoot.service.api.NewsService;
+import com.nefedova.MyNewsSpringBoot.service.api.UserService;
 import com.nefedova.MyNewsSpringBoot.utils.Constants;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,31 +33,42 @@ public class NewsController {
 
   private final NewsService newsService;
 
+  private final UserService userService;
+
   private final String BASE_URL = "https://newsapi.org/v2/{type}";
   private final String API_KEY = "122c312bd35846c3bc567d40c992cb42";
 
   @Autowired
-  public NewsController(NewsService newsService) {
+  public NewsController(NewsService newsService,
+      UserService userService) {
     this.newsService = newsService;
+    this.userService = userService;
   }
 
   @GetMapping("/all")
-  public ResponseEntity<List<News>> getAllNews() {
+  public ResponseEntity<List<NewsDto>> getAllNews() {
     List<News> listNews = newsService.getAllNews();
     if (CollectionUtils.isEmpty(listNews)) {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } else {
-      return new ResponseEntity<>(listNews, HttpStatus.OK);
+      return new ResponseEntity<>(
+          listNews.stream()
+              .map(NewsDto::newsToDto)
+              .collect(Collectors.toList()),
+          HttpStatus.OK);
     }
   }
 
   @PostMapping("/new")
-  public ResponseEntity<News> createNews(@RequestBody News newNews) {
-    News news = newsService.createNews(newNews);
+  public ResponseEntity<NewsDto> createNews(Authentication authentication,
+      @RequestBody NewsDto newNews) {
+    String username = authentication.getName();
+    User user = userService.getUser(username);
+    News news = newsService.createNews(newNews, user.getUserId());
     if (news == null) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     } else {
-      return new ResponseEntity<>(news, HttpStatus.CREATED);
+      return new ResponseEntity<>(NewsDto.newsToDto(news), HttpStatus.CREATED);
     }
   }
 

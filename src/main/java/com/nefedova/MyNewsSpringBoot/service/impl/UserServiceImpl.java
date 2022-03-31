@@ -1,7 +1,9 @@
-package com.nefedova.MyNewsSpringBoot.service;
+package com.nefedova.MyNewsSpringBoot.service.impl;
 
+import com.nefedova.MyNewsSpringBoot.dto.UserDto;
 import com.nefedova.MyNewsSpringBoot.entity.User;
 import com.nefedova.MyNewsSpringBoot.repository.UserRepository;
+import com.nefedova.MyNewsSpringBoot.service.api.UserService;
 import com.nefedova.MyNewsSpringBoot.utils.BCryptEncoderUtil;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,21 +30,14 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public User createUser(User user) {
-    user.setPassword(BCryptEncoderUtil.encryptPassword(user.getPassword()));
-    return userRepository.save(user);
-  }
-
-  @Override
-  public User updateUser(User user) {
-    User updatingUser = getUser(user.getUsername());
-    if (updatingUser == null) {
-      return null;
+  public User createUser(UserDto userDto) throws NoSuchFieldException {
+    User user = new User();
+    if (userDto.getUsername() == null || userDto.getPassword() == null) {
+      throw new NoSuchFieldException("Username or password is empty");
     }
-    updatingUser.setUsername(user.getUsername());
-    updatingUser.setPassword(user.getPassword());
-    updatingUser.setRoles(user.getRoles());
-    return userRepository.save(updatingUser);
+    user.setPassword(BCryptEncoderUtil.encryptPassword(userDto.getPassword()));
+    user.setUsername(userDto.getUsername());
+    return userRepository.save(user);
   }
 
   @Override

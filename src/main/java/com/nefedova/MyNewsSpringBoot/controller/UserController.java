@@ -2,8 +2,13 @@ package com.nefedova.MyNewsSpringBoot.controller;
 
 import static java.lang.String.format;
 
+import com.nefedova.MyNewsSpringBoot.dto.UserDto;
 import com.nefedova.MyNewsSpringBoot.entity.User;
-import com.nefedova.MyNewsSpringBoot.service.UserService;
+import com.nefedova.MyNewsSpringBoot.entity.UserRoles;
+import com.nefedova.MyNewsSpringBoot.service.api.RoleService;
+import com.nefedova.MyNewsSpringBoot.service.api.UserRolesService;
+import com.nefedova.MyNewsSpringBoot.service.api.UserService;
+import com.nefedova.MyNewsSpringBoot.utils.RoleEnum;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,7 +18,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,10 +28,16 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserController {
 
   private final UserService userService;
+  private final UserRolesService userRolesService;
+  private final RoleService roleService;
 
   @Autowired
-  public UserController(UserService userService) {
+  public UserController(UserService userService,
+      UserRolesService userRolesService,
+      RoleService roleService) {
     this.userService = userService;
+    this.userRolesService = userRolesService;
+    this.roleService = roleService;
   }
 
   @GetMapping("/all")
@@ -39,7 +49,7 @@ public class UserController {
     return new ResponseEntity<>(listUser, HttpStatus.OK);
   }
 
-  @PostMapping("/{username}")
+  @GetMapping("/{username}")
   public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
     User user = userService.getUser(username);
     if (user != null) {
@@ -48,45 +58,39 @@ public class UserController {
     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 
+
   @PostMapping("/user")
-  public ResponseEntity<User> createUser(@RequestBody User newUser) {
-    User user = userService.getUser(newUser.getUsername());
+  public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+    User user = userService.getUser(userDto.getUsername());
     if (user != null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          format("User with username %s is already exist", newUser.getUsername()));
+          format("User with username %s is already exist", userDto.getUsername()));
     }
-    User createdUser = userService.createUser(newUser);
-    if (createdUser == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User has not been created");
-    } else {
-      return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
-    }
-  }
-
-  @PutMapping("/{username}")
-  public ResponseEntity<User> updateUser(@PathVariable String username,
-      @RequestBody User updatedUser) {
-    User user = userService.updateUser(updatedUser);
-    if (user == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(HttpStatus.OK);
+    try {
+      Long roleId = roleService.getRoleId(RoleEnum.USER.getRole());
+      if (roleId == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role is not exist");
+      }
+      User createdUser = userService.createUser(userDto);
+      if (createdUser == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User had not been created");
+      }
+      UserRoles userRoles = new UserRoles(createdUser.getUserId(), roleId);
+      userRolesService.createUserRoles(userRoles);
+      return new ResponseEntity<>(UserDto.userToDto(createdUser), HttpStatus.CREATED);
+    } catch (NoSuchFieldException e) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User had not been created");
     }
   }
-
 
   @DeleteMapping("/{username}")
-  public ResponseEntity<User> deleteUserById(@PathVariable(name = "username") String username) {
+  public ResponseEntity<User> deleteUser(@PathVariable(name = "username") String username) {
     User user = userService.getUser(username);
     if (user == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    try {
-      userService.deleteUser(username);
-      return new ResponseEntity<>(HttpStatus.OK);
-    } catch (Exception e) {
-      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    userService.deleteUser(username);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
 }

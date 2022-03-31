@@ -1,7 +1,9 @@
-package com.nefedova.MyNewsSpringBoot.service;
+package com.nefedova.MyNewsSpringBoot.service.impl;
 
+import com.nefedova.MyNewsSpringBoot.dto.NewsDto;
 import com.nefedova.MyNewsSpringBoot.entity.News;
 import com.nefedova.MyNewsSpringBoot.repository.NewsRepository;
+import com.nefedova.MyNewsSpringBoot.service.api.NewsService;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -9,6 +11,7 @@ import java.util.List;
 import java.util.TimeZone;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NewsServiceImpl implements NewsService {
@@ -26,12 +29,20 @@ public class NewsServiceImpl implements NewsService {
   }
 
   @Override
-  public News createNews(News news) {
-    TimeZone tz = TimeZone.getTimeZone("UTC");
+  @Transactional
+  public News createNews(NewsDto newsDto, long userId) {
+    TimeZone tz = TimeZone.getTimeZone("Europe/Moscow");
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     df.setTimeZone(tz);
     String currentDate = df.format(new Date());
-    news.setPublishedAt(currentDate);
+    News news = News.builder()
+        .title(newsDto.getTitle())
+        .description(newsDto.getDescription())
+        .url(newsDto.getUrl())
+        .urlToImage(newsDto.getUrlToImage())
+        .publishedAt(currentDate)
+        .userId(userId)
+        .build();
     return newsRepository.save(news);
   }
 

@@ -6,7 +6,7 @@ import com.nefedova.MyNewsSpringBoot.entity.User;
 import com.nefedova.MyNewsSpringBoot.model.AuthenticationRequestModel;
 import com.nefedova.MyNewsSpringBoot.model.AuthenticationResponseModel;
 import com.nefedova.MyNewsSpringBoot.security.jwt.JwtTokenProvider;
-import com.nefedova.MyNewsSpringBoot.service.UserService;
+import com.nefedova.MyNewsSpringBoot.service.api.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

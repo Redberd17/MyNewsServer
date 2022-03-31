@@ -4,7 +4,7 @@ import static java.lang.String.format;
 
 import com.nefedova.MyNewsSpringBoot.entity.User;
 import com.nefedova.MyNewsSpringBoot.security.jwt.JwtUserFactory;
-import com.nefedova.MyNewsSpringBoot.service.UserService;
+import com.nefedova.MyNewsSpringBoot.service.api.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
