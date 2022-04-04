@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +24,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
@@ -68,18 +71,19 @@ public class NewsController {
     if (news == null) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     } else {
+      news.setAuthor(user);
       return new ResponseEntity<>(NewsDto.newsToDto(news), HttpStatus.CREATED);
     }
   }
 
   @PutMapping("/{newsId}")
-  public ResponseEntity<News> updateNews(@PathVariable(name = Constants.NEWS_ID) Long newsId,
-      @RequestBody News news) {
-    News updatingNews = newsService.updateNews(newsId, news);
-    if (updatingNews == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+  public ResponseEntity<NewsDto> updateNews(@PathVariable(name = Constants.NEWS_ID) Long newsId,
+      @RequestBody NewsDto newsDto) {
+    News updatedNews = newsService.updateNews(newsId, newsDto);
+    if (updatedNews == null) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No news with provided id");
     }
-    return new ResponseEntity<>(updatingNews, HttpStatus.OK);
+    return new ResponseEntity<>(NewsDto.newsToDto(updatedNews), HttpStatus.OK);
   }
 
   @DeleteMapping("/{newsId}")
@@ -87,16 +91,16 @@ public class NewsController {
       @PathVariable(name = Constants.NEWS_ID) Long newsId) {
     News news = newsService.findNewsById(newsId);
     if (news == null) {
-      return new ResponseEntity<>("No news with provided id", HttpStatus.NOT_FOUND);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No news with provided id");
     }
     newsService.deleteNewsById(newsId);
     return new ResponseEntity<>("News was successfully removed", HttpStatus.OK);
   }
 
-  @GetMapping("/top/headlines/{country}/{page}")
+  @GetMapping("/top/headlines")
   public ResponseEntity<LegacyNewsResponse> getTopHeadlinesNews(
-      @PathVariable(name = Constants.COUNTRY) String country,
-      @PathVariable(name = Constants.PAGE) Long page) {
+      @RequestParam(name = Constants.COUNTRY) String country,
+      @RequestParam(name = Constants.PAGE) Long page) {
     RestTemplate restTemplate = new RestTemplate();
     Map<String, String> urlParams = new HashMap<>();
     urlParams.put(Constants.TYPE, Constants.TOP_HEADLINES);
@@ -104,6 +108,28 @@ public class NewsController {
         .queryParam(Constants.COUNTRY, country)
         .queryParam(Constants.PAGE, page)
         .queryParam(Constants.API_KEY, API_KEY);
+    LegacyNewsResponse newsResponse = restTemplate.getForObject(
+        builder.buildAndExpand(urlParams).toUri(), LegacyNewsResponse.class);
+    return new ResponseEntity<>(newsResponse, HttpStatus.OK);
+  }
+
+  @GetMapping("/everything")
+  public ResponseEntity<LegacyNewsResponse> getEverythingNews(
+      @RequestParam(name = Constants.Q) String q,
+      @RequestParam(name = Constants.PAGE_SIZE) Long pageSize,
+      @RequestParam(name = Constants.PAGE) Long page,
+      @RequestParam(name = Constants.SORT_BY, required = false) String sortBy) {
+    RestTemplate restTemplate = new RestTemplate();
+    Map<String, String> urlParams = new HashMap<>();
+    urlParams.put(Constants.TYPE, Constants.EVERYTHING);
+    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(BASE_URL)
+        .queryParam(Constants.Q, q)
+        .queryParam(Constants.PAGE_SIZE, pageSize)
+        .queryParam(Constants.PAGE, page)
+        .queryParam(Constants.API_KEY, API_KEY);
+    if (Strings.isNotEmpty(sortBy)) {
+      builder.queryParam(Constants.SORT_BY, sortBy);
+    }
     LegacyNewsResponse newsResponse = restTemplate.getForObject(
         builder.buildAndExpand(urlParams).toUri(), LegacyNewsResponse.class);
     return new ResponseEntity<>(newsResponse, HttpStatus.OK);

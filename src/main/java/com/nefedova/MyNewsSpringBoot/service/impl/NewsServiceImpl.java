@@ -4,11 +4,8 @@ import com.nefedova.MyNewsSpringBoot.dto.NewsDto;
 import com.nefedova.MyNewsSpringBoot.entity.News;
 import com.nefedova.MyNewsSpringBoot.repository.NewsRepository;
 import com.nefedova.MyNewsSpringBoot.service.api.NewsService;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import com.nefedova.MyNewsSpringBoot.utils.DateUtil;
 import java.util.List;
-import java.util.TimeZone;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,32 +28,28 @@ public class NewsServiceImpl implements NewsService {
   @Override
   @Transactional
   public News createNews(NewsDto newsDto, long userId) {
-    TimeZone tz = TimeZone.getTimeZone("Europe/Moscow");
-    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-    df.setTimeZone(tz);
-    String currentDate = df.format(new Date());
     News news = News.builder()
         .title(newsDto.getTitle())
         .description(newsDto.getDescription())
         .url(newsDto.getUrl())
         .urlToImage(newsDto.getUrlToImage())
-        .publishedAt(currentDate)
+        .publishedAt(DateUtil.getCurrentDateUTC())
         .userId(userId)
         .build();
     return newsRepository.save(news);
   }
 
   @Override
-  public News updateNews(Long id, News news) {
+  public News updateNews(Long id, NewsDto newsDto) {
     News updatingNews = newsRepository.findByNewsId(id);
     if (updatingNews == null) {
       return null;
     }
-    updatingNews.setTitle(news.getTitle());
-    updatingNews.setDescription(news.getDescription());
-    updatingNews.setUrl(news.getUrl());
-    updatingNews.setUrlToImage(news.getUrlToImage());
-    updatingNews.setPublishedAt(news.getPublishedAt());
+    updatingNews.setTitle(newsDto.getTitle());
+    updatingNews.setDescription(newsDto.getDescription());
+    updatingNews.setUrl(newsDto.getUrl());
+    updatingNews.setUrlToImage(newsDto.getUrlToImage());
+    updatingNews.setPublishedAt(DateUtil.getCurrentDateUTC());
     return newsRepository.save(updatingNews);
   }
 

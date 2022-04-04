@@ -10,7 +10,7 @@ public interface NewsService {
 
   News createNews(NewsDto newsDto, long userId);
 
-  News updateNews(Long id, News news);
+  News updateNews(Long id, NewsDto newsDto);
 
   void deleteNewsById(Long id);
 

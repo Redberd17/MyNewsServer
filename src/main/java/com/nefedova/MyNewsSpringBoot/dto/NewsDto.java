@@ -34,7 +34,16 @@ public class NewsDto {
         .url(news.getUrl())
         .urlToImage(news.getUrlToImage())
         .publishedAt(news.getPublishedAt())
-        .author(news.getAuthor() != null ? news.getAuthor().getUsername() : null)
+        .author(news.getAuthor().getUsername())
+        .build();
+  }
+
+  public static News dtoToNews(NewsDto newsDto) {
+    return News.builder()
+        .title(newsDto.getTitle())
+        .description(newsDto.getDescription())
+        .url(newsDto.getUrl())
+        .urlToImage(newsDto.getUrlToImage())
         .build();
   }
 }

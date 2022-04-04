@@ -10,4 +10,5 @@ public class LegacyArticle {
   String url;
   String urlToImage;
   String publishedAt;
+  String author;
 }
