@@ -8,7 +8,6 @@ import com.nefedova.MyNewsSpringBoot.utils.DateUtil;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NewsServiceImpl implements NewsService {
@@ -26,7 +25,6 @@ public class NewsServiceImpl implements NewsService {
   }
 
   @Override
-  @Transactional
   public News createNews(NewsDto newsDto, long userId) {
     News news = News.builder()
         .title(newsDto.getTitle())
@@ -40,11 +38,7 @@ public class NewsServiceImpl implements NewsService {
   }
 
   @Override
-  public News updateNews(Long id, NewsDto newsDto) {
-    News updatingNews = newsRepository.findByNewsId(id);
-    if (updatingNews == null) {
-      return null;
-    }
+  public News updateNews(Long id, News updatingNews, NewsDto newsDto) {
     updatingNews.setTitle(newsDto.getTitle());
     updatingNews.setDescription(newsDto.getDescription());
     updatingNews.setUrl(newsDto.getUrl());
@@ -61,5 +55,11 @@ public class NewsServiceImpl implements NewsService {
   @Override
   public News findNewsById(Long id) {
     return newsRepository.findById(id).orElse(null);
+  }
+
+  @Override
+  public List<News> getNewsPaginated(Long pageSize, Long page) {
+    Long startWith = page == 1 ? 0 : pageSize * (page - 1);
+    return newsRepository.getPaginatedNews(pageSize, startWith);
   }
 }

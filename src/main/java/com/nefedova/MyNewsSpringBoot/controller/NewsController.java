@@ -62,6 +62,22 @@ public class NewsController {
     }
   }
 
+  @GetMapping("/all/paginate")
+  public ResponseEntity<List<NewsDto>> getAllNewsPaginated(
+      @RequestParam(name = Constants.PAGE_SIZE) Long pageSize,
+      @RequestParam(name = Constants.PAGE) Long page) {
+    List<News> listNews = newsService.getNewsPaginated(pageSize, page);
+    if (CollectionUtils.isEmpty(listNews)) {
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } else {
+      return new ResponseEntity<>(
+          listNews.stream()
+              .map(NewsDto::newsToDto)
+              .collect(Collectors.toList()),
+          HttpStatus.OK);
+    }
+  }
+
   @PostMapping("/new")
   public ResponseEntity<NewsDto> createNews(Authentication authentication,
       @RequestBody NewsDto newNews) {
@@ -77,24 +93,37 @@ public class NewsController {
   }
 
   @PutMapping("/{newsId}")
-  public ResponseEntity<NewsDto> updateNews(@PathVariable(name = Constants.NEWS_ID) Long newsId,
+  public ResponseEntity<NewsDto> updateNews(Authentication authentication,
+      @PathVariable(name = Constants.NEWS_ID) Long newsId,
       @RequestBody NewsDto newsDto) {
-    News updatedNews = newsService.updateNews(newsId, newsDto);
-    if (updatedNews == null) {
+    String username = authentication.getName();
+    News updatingNews = newsService.findNewsById(newsId);
+    if (updatingNews == null) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No news with provided id");
+    }
+    if (!username.equals(updatingNews.getAuthor().getUsername())) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No rights to change this news");
+    }
+    News updatedNews = newsService.updateNews(newsId, updatingNews, newsDto);
+    if (updatedNews == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "News wasn't updated");
     }
     return new ResponseEntity<>(NewsDto.newsToDto(updatedNews), HttpStatus.OK);
   }
 
   @DeleteMapping("/{newsId}")
-  public ResponseEntity<String> deleteNewsById(
+  public ResponseEntity<String> deleteNewsById(Authentication authentication,
       @PathVariable(name = Constants.NEWS_ID) Long newsId) {
     News news = newsService.findNewsById(newsId);
+    String username = authentication.getName();
     if (news == null) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No news with provided id");
     }
+    if (!username.equals(news.getAuthor().getUsername())) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No rights to delete this news");
+    }
     newsService.deleteNewsById(newsId);
-    return new ResponseEntity<>("News was successfully removed", HttpStatus.OK);
+    return ResponseEntity.ok().build();
   }
 
   @GetMapping("/top/headlines")

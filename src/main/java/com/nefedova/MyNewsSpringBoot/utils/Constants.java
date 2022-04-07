@@ -6,6 +6,7 @@ public class Constants {
   public static final String COUNTRY = "country";
   public static final String Q = "q";
   public static final String PAGE_SIZE = "pageSize";
+  public static final String USERNAME = "username";
   public static final String PAGE = "page";
   public static final String SORT_BY = "sortBy";
   public static final String TOP_HEADLINES = "top-headlines";

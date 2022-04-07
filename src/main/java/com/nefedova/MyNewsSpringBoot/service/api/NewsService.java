@@ -10,9 +10,11 @@ public interface NewsService {
 
   News createNews(NewsDto newsDto, long userId);
 
-  News updateNews(Long id, NewsDto newsDto);
+  News updateNews(Long id, News updatingNews, NewsDto newsDto);
 
   void deleteNewsById(Long id);
 
   News findNewsById(Long id);
+
+  List<News> getNewsPaginated(Long pageSize, Long page);
 }

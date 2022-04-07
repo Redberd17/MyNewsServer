@@ -3,11 +3,14 @@ package com.nefedova.MyNewsSpringBoot.controller;
 import static java.lang.String.format;
 
 import com.nefedova.MyNewsSpringBoot.dto.UserDto;
+import com.nefedova.MyNewsSpringBoot.dto.UserRoleDto;
+import com.nefedova.MyNewsSpringBoot.entity.Role;
 import com.nefedova.MyNewsSpringBoot.entity.User;
 import com.nefedova.MyNewsSpringBoot.entity.UserRoles;
 import com.nefedova.MyNewsSpringBoot.service.api.RoleService;
 import com.nefedova.MyNewsSpringBoot.service.api.UserRolesService;
 import com.nefedova.MyNewsSpringBoot.service.api.UserService;
+import com.nefedova.MyNewsSpringBoot.utils.Constants;
 import com.nefedova.MyNewsSpringBoot.utils.RoleEnum;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,13 +87,40 @@ public class UserController {
   }
 
   @DeleteMapping("/{username}")
-  public ResponseEntity<User> deleteUser(@PathVariable(name = "username") String username) {
+  public ResponseEntity<User> deleteUser(@PathVariable(name = Constants.USERNAME) String username) {
     User user = userService.getUser(username);
     if (user == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     userService.deleteUser(username);
     return new ResponseEntity<>(HttpStatus.OK);
+  }
+
+  @PostMapping("/role")
+  public ResponseEntity<String> setUserRole(@RequestBody UserRoleDto userRoleDto) {
+    User user = userService.getUser(userRoleDto.getUsername());
+    if (user == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          format("User with username %s not found", userRoleDto.getUsername()));
+    }
+    Role role = roleService.getRole(userRoleDto.getRole());
+    if (role == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          format("Role %s not found", userRoleDto.getRole()));
+    }
+    if (user.roleIsAlreadyPresent(role)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          format("User %s already has role %s", userRoleDto.getUsername(), userRoleDto.getRole()));
+    }
+    UserRoles userRoles = new UserRoles(user.getUserId(), role.getRoleId());
+    UserRoles createdUserRoles = userRolesService.createUserRoles(userRoles);
+    if (createdUserRoles == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          format("Role %s was not added to user %s", userRoleDto.getRole(),
+              userRoleDto.getUsername()));
+    }
+    return ResponseEntity.ok(
+        format("Role %s was added to user %s", userRoleDto.getRole(), userRoleDto.getUsername()));
   }
 
 }
