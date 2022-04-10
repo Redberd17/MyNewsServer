@@ -4,7 +4,6 @@ import com.nefedova.MyNewsSpringBoot.entity.Role;
 import com.nefedova.MyNewsSpringBoot.utils.Constants;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.ArrayList;
@@ -74,12 +73,8 @@ public class JwtTokenProvider {
   }
 
   public boolean validateToken(String token) {
-    try {
-      Jws<Claims> claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
-      return !claims.getBody().getExpiration().before(new Date());
-    } catch (JwtException | IllegalArgumentException e) {
-      throw new JwtAuthException("JWT token is expired or invalid");
-    }
+    Jws<Claims> claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+    return !claims.getBody().getExpiration().before(new Date());
   }
 
   private List<String> getRoleNames(List<Role> roles) {
