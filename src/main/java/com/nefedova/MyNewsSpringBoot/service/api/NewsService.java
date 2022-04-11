@@ -2,6 +2,8 @@ package com.nefedova.MyNewsSpringBoot.service.api;
 
 import com.nefedova.MyNewsSpringBoot.dto.NewsDto;
 import com.nefedova.MyNewsSpringBoot.entity.News;
+import com.nefedova.MyNewsSpringBoot.model.NewsResponse;
+
 import java.util.List;
 
 public interface NewsService {
@@ -16,5 +18,5 @@ public interface NewsService {
 
   News findNewsById(Long id);
 
-  List<News> getNewsPaginated(Long pageSize, Long page);
+  NewsResponse getNewsPaginated(Long pageSize, Long page);
 }

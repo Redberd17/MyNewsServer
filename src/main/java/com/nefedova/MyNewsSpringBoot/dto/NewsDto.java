@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.lang.Nullable;
 
 @Data
 @AllArgsConstructor
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class NewsDto {
 
+  @Nullable
   private Long id;
 
   private String title;
