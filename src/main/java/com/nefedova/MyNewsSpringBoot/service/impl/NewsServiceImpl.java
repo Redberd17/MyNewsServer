@@ -46,7 +46,6 @@ public class NewsServiceImpl implements NewsService {
     updatingNews.setDescription(newsDto.getDescription());
     updatingNews.setUrl(newsDto.getUrl());
     updatingNews.setUrlToImage(newsDto.getUrlToImage());
-    updatingNews.setPublishedAt(DateUtil.getCurrentDateUTC());
     return newsRepository.save(updatingNews);
   }
 

@@ -16,7 +16,7 @@ public interface NewsRepository extends CrudRepository<News, Long> {
 
   void deleteByNewsId(Long newsId);
 
-  @Query(value = "SELECT * FROM NEWS LIMIT ?1 OFFSET ?2", nativeQuery = true)
+  @Query(value = "SELECT * FROM NEWS ORDER BY published_at LIMIT ?1 OFFSET ?2", nativeQuery = true)
   List<News> getPaginatedNews(Long pageSize, Long startWith);
 
   long count();
